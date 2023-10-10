@@ -77,6 +77,8 @@ Route::delete('/delete-pass-validity/{id}', [App\Http\Controllers\MastersControl
 Route::get('/special-pass-visitor', [App\Http\Controllers\HomeController::class, 'special_pass'])->name('specialpass');
 Route::get('/add-special-pass-visitor', [App\Http\Controllers\HomeController::class, 'add_specialpass'])->name('add.specialpass');
 Route::post('/store-special-visitor-pass', [App\Http\Controllers\HomeController::class, 'store_special_pass'])->name('store.special_pass');
+Route::get('/pending-special-pass', [App\Http\Controllers\HomeController::class, 'pending_special_pass'])->name('pending.special_pass');
+Route::post('/special-pass-approved/{id}', [App\Http\Controllers\HomeController::class, 'special_pass_approval'])->name('approved.special_pass');
 
 // Change password routes
 // Display the password change form
