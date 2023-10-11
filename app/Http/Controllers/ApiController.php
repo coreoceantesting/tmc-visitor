@@ -120,7 +120,7 @@ class ApiController extends Controller
             $query->where('name', 'like', '%' . $name . '%');
         }
         
-        $visitors = $query->orderBy('id','desc')->get();
+        $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->get();
 
         return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
