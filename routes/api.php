@@ -33,3 +33,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('/login', 'App\Http\Controllers\ApiController@login');
 Route::middleware('auth:sanctum')->post('/logout', 'App\Http\Controllers\ApiController@logout');
+
+Route::get('/visit-purpose-list', 'App\Http\Controllers\ApiController@visit_purpose_list');
+Route::get('/department-list', 'App\Http\Controllers\ApiController@department_list');
+
+Route::middleware('auth:sanctum')->post('/store-visitor','App\http\Controllers\ApiController@store_visitor');
+
+Route::middleware('auth:sanctum')->get('/search-visitor','App\http\Controllers\ApiController@searchVisitors');
+
+Route::middleware('auth:sanctum')->get('/auth/todays-visitor','App\http\Controllers\ApiController@todaysVisitors');
+
+Route::middleware('auth:sanctum')->get('/auth/search-exit-visitor','App\http\Controllers\ApiController@exitsearchVisitors');
+
+Route::middleware('auth:sanctum')->get('/auth/todays-exit-visitor','App\http\Controllers\ApiController@exittodaysVisitors');

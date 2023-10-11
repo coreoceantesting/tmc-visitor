@@ -29,7 +29,10 @@ class User extends Authenticatable
         'empid',
         'username',
         'department',
-        'is_delete'
+        'is_delete',
+        'created_by',
+        'updated_by',
+        'photo',
 
 
         
