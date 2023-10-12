@@ -84,11 +84,12 @@ li {
                             </ul>
                         </div>
                         <div class="card-footer bg-primary border-primary">
-                            <form action="{{ route('approved.special_pass', ['id' => $visitor->special_pass_visitors_id]) }}" method="POST">
+                            {{-- <form action="{{ route('approved.special_pass', ['id' => $visitor->special_pass_visitors_id]) }}" method="POST">
                                 @csrf
                                 @method('POST')
                                 <button type="submit" class="btn btn-success">Approve</button>
-                            </form>
+                            </form> --}}
+                            <a class="btn btn-success form-control"  href="{{ route('view.special_pass', ['id' => $visitor->special_pass_visitors_id]) }}">View</a>
                         </div>
                     </div>
                 </div>

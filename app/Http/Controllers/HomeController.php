@@ -358,17 +358,44 @@ class HomeController extends Controller
         return view('pending_special_pass',compact('visitors','department','VisitingPurpose'));
     }
     
-    public function special_pass_approval($id)
+    public function special_pass_approval(Request $request,$id)
     {
+        $remark = $request->input('approveremark');
         DB::table('special_pass_visitors')
         ->where('special_pass_visitors_id', $id) // Specify the condition for the update
         ->update([
             'approval_status' => 'approved',
             'approval_by' => auth()->user()->first_name,
             'approval_date' => date('d-m-Y'),
+            'remark' => $remark
         ]);
 
         return redirect()->route('pending.special_pass')->with('success', 'Special pass approved successfully');
+    }
+
+    public function special_pass_reject(Request $request,$id)
+    {
+        $remark = $request->input('rejectremark');
+        DB::table('special_pass_visitors')
+        ->where('special_pass_visitors_id', $id) // Specify the condition for the update
+        ->update([
+            'approval_status' => 'reject',
+            'approval_by' => auth()->user()->first_name,
+            'approval_date' => date('d-m-Y'),
+            'remark' => $remark
+        ]);
+
+        return redirect()->route('pending.special_pass')->with('success', 'Special pass rejected successfully');
+    }
+
+    // view speical pass
+    public function special_pass_view($id)
+    {
+        $data = DB::table('special_pass_visitors')->where('special_pass_visitors_id', $id)->first();
+        $department = Department::where('is_delete','0')->get();
+        $PassValidity = PassValidity::where('is_delete','0')->get();
+        $Passfor = Passfor::where('is_delete','0')->get();
+        return view('view_specialpass',compact('data','department','PassValidity','Passfor'));
     }
 
 }
