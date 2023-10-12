@@ -65,8 +65,7 @@ class ApiController extends Controller
             'visiting_dept' => 'required',
             'to_visit' => 'required',
             'pass_id' => 'required',
-            'entry_datetime' => 'required|date',
-            'photo' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust max file size as needed
+            'photo' => 'required', // Adjust max file size as needed
         ]);
         if (Auth::check()) 
         {
@@ -84,12 +83,17 @@ class ApiController extends Controller
             $visitor->created_by = $user->id;
             $visitor->updated_by = $user->id;
 
-            if ($request->hasFile('photo')) 
-            {
+            if ($request->has('photo')) {
+                $photoData = $request->input('photo');
+                
+                // Determine the image extension
+                $imageType = explode('/', mime_content_type("data:application/octet-stream;base64,$photoData"))[1];
+                
+                // Save the image to a folder (you may need to adjust the path)
                 $folderName = 'admin/img';
-                $imageFile = $request->file('photo');
-                $imageName = time() . '.' . $imageFile->getClientOriginalExtension();
-                $imageFile->move(public_path($folderName), $imageName);
+                $imageName = time() . ".$imageType";
+                file_put_contents(public_path($folderName . '/' . $imageName), base64_decode($photoData));
+        
                 $visitor->photo = $folderName . '/' . $imageName;
             }
 
@@ -120,7 +124,7 @@ class ApiController extends Controller
             $query->where('name', 'like', '%' . $name . '%');
         }
         
-        $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->get();
+        $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->paginate(10);
 
         return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
@@ -141,7 +145,7 @@ class ApiController extends Controller
         }
 
         $today = Carbon::now()->format('Y-m-d');
-        $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->orderBy('id','desc')->get();
+        $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->orderBy('id','desc')->paginate(10);
 
         return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
@@ -150,20 +154,26 @@ class ApiController extends Controller
     {
         $passId = $request->input('pass_id');
         $name = $request->input('name');
+        $today = Carbon::now()->format('Y-m-d');
 
-        $query = Visitors::query();
+        $query = Visitor::query();
 
         if ($passId) {
-            $query->where('pass_id', $passId);
+            $query->where('pass_id', $passId)->where('exit_datetime', '!=', null);
         }
 
         if ($name) {
-            $query->where('name', 'like', '%' . $name . '%');
+            $query->where('name', 'like', '%' . $name . '%')->where('exit_datetime', '!=', null);
         }
-        
-        $visitors = $query->where('exit_datetime','!=',null)->orderBy('id','desc')->get();
 
-        return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
+        // If no search criteria are provided, by default, show today's exited visitors
+        if (empty($passId) && empty($name)) {
+            $query->whereDate('exit_datetime', $today);
+        }
+
+        $visitors = $query->orderBy('id', 'desc')->paginate(10);
+
+        return response()->json(['success' => true, 'data' => $visitors, 'message' => 'success'], 200);
     }
     
      public function exittodaysVisitors(Request $request)
@@ -182,8 +192,41 @@ class ApiController extends Controller
         }
 
         $today = Carbon::now()->format('Y-m-d');
-        $visitors = $query->whereDate('entry_datetime', $today)->whereDate('exit_datetime', $today)->orderBy('id','desc')->get();
+        $visitors = $query->whereDate('entry_datetime', $today)->whereDate('exit_datetime', $today)->orderBy('id','desc')->paginate(10);
 
         return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
+    }
+
+    // update visitor exit datetime
+    public function updateexitDatetime(Request $request, $id)
+    {
+        // Find the visitor by ID
+        $visitor = Visitors::find($id);
+
+        if (!$visitor) {
+            return response()->json(['sucess'=>false,'data' => 'Visitor Not Found','message'=>'Not Found',], 404);
+        }
+
+        // Update the exit date and time
+        $visitor->exit_datetime = Carbon::now();
+        $visitor->save();
+
+        return response()->json(['sucess'=>true,'data' => 'Visitor Exit Time Updated','message' => 'Visitor has exited successfully'], 200);
+    }
+
+    // validation for passid 
+    public function checkPassId(Request $request)
+    {
+        // Check if there is a visitor with the provided pass ID who hasn't exited
+        $pass_id = $request->input('pass_id');
+        $visitor = Visitors::where('pass_id', $pass_id)
+            ->whereNull('exit_datetime')
+            ->first();
+
+        if ($visitor) {
+            return response()->json(['success' => 'true','data' => 'Pass ID already Assigend','message' => 'Pass ID is already assigned to an active visitor'], 200);
+        }
+
+        return response()->json(['success' => 'true','data'=>'Pass ID is available','message' => 'Pass ID is available'], 200);
     }
 }

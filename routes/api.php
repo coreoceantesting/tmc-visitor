@@ -46,3 +46,7 @@ Route::middleware('auth:sanctum')->get('/auth/todays-visitor','App\http\Controll
 Route::middleware('auth:sanctum')->get('/auth/search-exit-visitor','App\http\Controllers\ApiController@exitsearchVisitors');
 
 Route::middleware('auth:sanctum')->get('/auth/todays-exit-visitor','App\http\Controllers\ApiController@exittodaysVisitors');
+
+Route::middleware('auth:sanctum')->put('/auth/update-exit-datetime/{id}','App\http\Controllers\ApiController@updateexitDatetime');
+
+Route::middleware('auth:sanctum')->get('/auth/check-pass-id/', 'App\http\Controllers\ApiController@checkPassId');
