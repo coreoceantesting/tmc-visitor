@@ -1,6 +1,26 @@
 @extends('layouts.master')
 
 @section('content')
+<style>
+  .circular-image {
+    width: 150px; /* Adjust the size as needed */
+    height: 150px;
+    border-radius: 50%; /* Make it circular */
+    overflow: hidden; /* Hide the overflowing parts of the image */
+    display: inline-block;
+    margin: 0 auto; /* Center the image horizontally */
+}
+
+.circular-image img {
+    width: 100%; /* Ensure the image covers the entire container */
+    height: 100%; /* Ensure the image covers the entire container */
+    object-fit: cover; /* Scale the image to cover the entire container */
+    display: block; /* Remove extra space under the image */
+}
+
+
+
+</style>
 
 <div class="container-fluid">
     
@@ -29,6 +49,16 @@
                 <div class="card-body">
                     <form method="POST" action="{{ route('store.special_pass') }}" enctype="multipart/form-data">
                         @csrf
+
+                        <div class="form-group row">
+                            <div class="col-md-4 col-form-label text-md-right"></div>
+                            <div class="col-md-4 d-flex justify-content-center align-items-center">
+                                <div class="circular-image">
+                                    <img src="{{ asset($data->photo) }}" alt="User Photo">
+                                </div>
+                            </div>
+                        </div>
+                        
 
                         <div class="form-group row">
                             <label for="f_name" class="col-md-4 col-form-label text-md-right">{{ __('First Name') }}</label>
@@ -65,20 +95,6 @@
                                 <input id="l_name" type="text" class="form-control @error('l_name') is-invalid @enderror" name="l_name" value="{{ $data->last_name}}" required autocomplete="l_name" autofocus readonly>
 
                                 @error('l_name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="photo" class="col-md-4 col-form-label text-md-right">{{ __('Photo') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="photo" type="file" class="form-control @error('photo') is-invalid @enderror" name="photo" value="{{ old('photo') }}" required autocomplete="photo" autofocus>
-
-                                @error('photo')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
