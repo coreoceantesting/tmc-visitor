@@ -125,8 +125,43 @@ class ApiController extends Controller
         }
         
         $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->paginate(10);
-
-        return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
+        return response()->json([
+            'success' => true,
+            'data' => $visitors->items(),
+            'message' => 'success',
+            'links' => [
+                'first' => $visitors->url(1),
+                'last' => $visitors->url($visitors->lastPage()),
+                'prev' => $visitors->previousPageUrl(),
+                'next' => $visitors->nextPageUrl(),
+            ],
+            'meta' => [
+                'current_page' => $visitors->currentPage(),
+                'from' => $visitors->firstItem(),
+                'last_page' => $visitors->lastPage(),
+                'links' => [
+                    [
+                        'url' => $visitors->url(1),
+                        'label' => '&laquo; Previous',
+                        'active' => !$visitors->onFirstPage(),
+                    ],
+                    [
+                        'url' => $visitors->url($visitors->lastPage()),
+                        'label' => $visitors->lastPage(),
+                        'active' => $visitors->currentPage() == $visitors->lastPage(),
+                    ],
+                    [
+                        'url' => $visitors->nextPageUrl(),
+                        'label' => 'Next &raquo;',
+                        'active' => $visitors->hasMorePages(),
+                    ],
+                ],
+                'path' => $visitors->url(1),
+                'per_page' => $visitors->perPage(),
+                'to' => $visitors->lastItem(),
+                'total' => $visitors->total(),
+            ],
+        ], 200);
     }
     
      public function todaysVisitors(Request $request)
@@ -147,7 +182,44 @@ class ApiController extends Controller
         $today = Carbon::now()->format('Y-m-d');
         $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->orderBy('id','desc')->paginate(10);
 
-        return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
+        return response()->json([
+            'success' => true,
+            'data' => $visitors->items(),
+            'message' => 'success',
+            'links' => [
+                'first' => $visitors->url(1),
+                'last' => $visitors->url($visitors->lastPage()),
+                'prev' => $visitors->previousPageUrl(),
+                'next' => $visitors->nextPageUrl(),
+            ],
+            'meta' => [
+                'current_page' => $visitors->currentPage(),
+                'from' => $visitors->firstItem(),
+                'last_page' => $visitors->lastPage(),
+                'links' => [
+                    [
+                        'url' => $visitors->url(1),
+                        'label' => '&laquo; Previous',
+                        'active' => !$visitors->onFirstPage(),
+                    ],
+                    [
+                        'url' => $visitors->url($visitors->lastPage()),
+                        'label' => $visitors->lastPage(),
+                        'active' => $visitors->currentPage() == $visitors->lastPage(),
+                    ],
+                    [
+                        'url' => $visitors->nextPageUrl(),
+                        'label' => 'Next &raquo;',
+                        'active' => $visitors->hasMorePages(),
+                    ],
+                ],
+                'path' => $visitors->url(1),
+                'per_page' => $visitors->perPage(),
+                'to' => $visitors->lastItem(),
+                'total' => $visitors->total(),
+            ],
+        ], 200);
+        // return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
 
     public function exitsearchVisitors(Request $request)
@@ -173,7 +245,45 @@ class ApiController extends Controller
 
         $visitors = $query->orderBy('id', 'desc')->paginate(10);
 
-        return response()->json(['success' => true, 'data' => $visitors, 'message' => 'success'], 200);
+        return response()->json([
+            'success' => true,
+            'data' => $visitors->items(),
+            'message' => 'success',
+            'links' => [
+                'first' => $visitors->url(1),
+                'last' => $visitors->url($visitors->lastPage()),
+                'prev' => $visitors->previousPageUrl(),
+                'next' => $visitors->nextPageUrl(),
+            ],
+            'meta' => [
+                'current_page' => $visitors->currentPage(),
+                'from' => $visitors->firstItem(),
+                'last_page' => $visitors->lastPage(),
+                'links' => [
+                    [
+                        'url' => $visitors->url(1),
+                        'label' => '&laquo; Previous',
+                        'active' => !$visitors->onFirstPage(),
+                    ],
+                    [
+                        'url' => $visitors->url($visitors->lastPage()),
+                        'label' => $visitors->lastPage(),
+                        'active' => $visitors->currentPage() == $visitors->lastPage(),
+                    ],
+                    [
+                        'url' => $visitors->nextPageUrl(),
+                        'label' => 'Next &raquo;',
+                        'active' => $visitors->hasMorePages(),
+                    ],
+                ],
+                'path' => $visitors->url(1),
+                'per_page' => $visitors->perPage(),
+                'to' => $visitors->lastItem(),
+                'total' => $visitors->total(),
+            ],
+        ], 200);
+
+        // return response()->json(['success' => true, 'data' => $visitors, 'message' => 'success'], 200);
     }
     
      public function exittodaysVisitors(Request $request)
@@ -194,7 +304,44 @@ class ApiController extends Controller
         $today = Carbon::now()->format('Y-m-d');
         $visitors = $query->whereDate('entry_datetime', $today)->whereDate('exit_datetime', $today)->orderBy('id','desc')->paginate(10);
 
-        return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
+        return response()->json([
+            'success' => true,
+            'data' => $visitors->items(),
+            'message' => 'success',
+            'links' => [
+                'first' => $visitors->url(1),
+                'last' => $visitors->url($visitors->lastPage()),
+                'prev' => $visitors->previousPageUrl(),
+                'next' => $visitors->nextPageUrl(),
+            ],
+            'meta' => [
+                'current_page' => $visitors->currentPage(),
+                'from' => $visitors->firstItem(),
+                'last_page' => $visitors->lastPage(),
+                'links' => [
+                    [
+                        'url' => $visitors->url(1),
+                        'label' => '&laquo; Previous',
+                        'active' => !$visitors->onFirstPage(),
+                    ],
+                    [
+                        'url' => $visitors->url($visitors->lastPage()),
+                        'label' => $visitors->lastPage(),
+                        'active' => $visitors->currentPage() == $visitors->lastPage(),
+                    ],
+                    [
+                        'url' => $visitors->nextPageUrl(),
+                        'label' => 'Next &raquo;',
+                        'active' => $visitors->hasMorePages(),
+                    ],
+                ],
+                'path' => $visitors->url(1),
+                'per_page' => $visitors->perPage(),
+                'to' => $visitors->lastItem(),
+                'total' => $visitors->total(),
+            ],
+        ], 200);
+        // return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
 
     // update visitor exit datetime
