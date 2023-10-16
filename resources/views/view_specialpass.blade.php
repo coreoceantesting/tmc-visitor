@@ -1,7 +1,6 @@
 @extends('layouts.master')
 
 @section('content')
-
 <style>
   .circular-image {
     width: 150px; /* Adjust the size as needed */

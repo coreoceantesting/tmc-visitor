@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Token;
 use Illuminate\Support\Str;
 use App\Models\VisitingPurpose;
 use App\Models\Department;
 
 use App\Models\Visitors;
 use Carbon\Carbon;
-use DB;
 
 class ApiController extends Controller
 {
@@ -23,36 +23,37 @@ class ApiController extends Controller
                 $user = Auth::user();
                 $token = explode('|', $user->createToken('AuthToken')->plainTextToken, 2);
                 $user['token']= $token[1];
-                return response()->json(['success'=>true,'data' => $user,'message'=>'Login Success'], 200);
+                return response()->json(['success'=>'true','data' => $user,'message'=>'Login Success'], 200);
             }else{
                 Auth::logout();
-                return response()->json(['success'=>false,'error' => 'Unauthorized','message'=>'Login fail'], 401);
+                return response()->json(['error' => 'Unauthorized'], 401);
             }
 
         }
 
-        return response()->json(['success'=>false,'error' => 'Unauthorized','message'=>'Login fail'], 401);
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['sucess'=>true,'data' => 'Logged out successfully','message'=>'success'], 200);
+        return response()->json(['sucess'=>'true','message' => 'Logged out successfully'], 200);
     }
-    
+
     // dropdown listing api
     public function visit_purpose_list()
     {
         $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
-        return response()->json(['sucess'=>true,'data' => $VisitingPurpose,'message'=>'success'], 200);
+        return response()->json(['sucess'=>'true','data' => $VisitingPurpose], 200);
     }
 
     public function department_list()
     {
         $VisitingPurpose = Department::where('is_delete','0')->get();
-        return response()->json(['sucess'=>true,'data' => $VisitingPurpose,'message'=>'success'], 200);
+        return response()->json(['sucess'=>'true','data' => $VisitingPurpose], 200);
     }
-    
+
+
     // store visitor api
     public function store_visitor(Request $request)
     {
@@ -98,15 +99,15 @@ class ApiController extends Controller
 
             $visitor->save();
 
-            return response()->json(['sucess'=>true,'data' => 'Visitor created successfully','message'=>'success'], 201);
+            return response()->json(['success'=>'true','message' => 'Visitor created successfully'], 201);
         }
         else
         {
-            return response()->json(['success'=>false,'error' => 'Unauthorized','message'=>'false'], 401);
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
     
     }
-    
+
     // search visitor by pass id and name
     public function searchVisitors(Request $request)
     {
@@ -124,7 +125,6 @@ class ApiController extends Controller
         }
         
         $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->paginate(10);
-
         return response()->json([
             'success' => true,
             'data' => $visitors->items(),
@@ -181,7 +181,6 @@ class ApiController extends Controller
 
         $today = Carbon::now()->format('Y-m-d');
         $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->orderBy('id','desc')->paginate(10);
-        
         return response()->json([
             'success' => true,
             'data' => $visitors->items(),
@@ -219,18 +218,16 @@ class ApiController extends Controller
                 'total' => $visitors->total(),
             ],
         ], 200);
-
         // return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
-    
-    // exited list
+
     public function exitsearchVisitors(Request $request)
     {
         $passId = $request->input('pass_id');
         $name = $request->input('name');
         $today = Carbon::now()->format('Y-m-d');
 
-        $query = Visitors::query();
+        $query = Visitor::query();
 
         if ($passId) {
             $query->where('pass_id', $passId)->where('exit_datetime', '!=', null);
@@ -245,7 +242,6 @@ class ApiController extends Controller
         }
 
         $visitors = $query->orderBy('id', 'desc')->paginate(10);
-        
         return response()->json([
             'success' => true,
             'data' => $visitors->items(),
@@ -304,7 +300,6 @@ class ApiController extends Controller
 
         $today = Carbon::now()->format('Y-m-d');
         $visitors = $query->whereDate('entry_datetime', $today)->whereDate('exit_datetime', $today)->orderBy('id','desc')->paginate(10);
-        
         return response()->json([
             'success' => true,
             'data' => $visitors->items(),
@@ -342,10 +337,9 @@ class ApiController extends Controller
                 'total' => $visitors->total(),
             ],
         ], 200);
-
         // return response()->json(['sucess'=>true,'data' => $visitors,'message'=>'success', 200]);
     }
-    
+
     // update visitor exit datetime
     public function updateexitDatetime(Request $request, $id)
     {
@@ -362,7 +356,6 @@ class ApiController extends Controller
 
         return response()->json(['sucess'=>true,'data' => 'Visitor Exit Time Updated','message' => 'Visitor has exited successfully'], 200);
     }
-    
     // validation for passid 
     public function checkPassId(Request $request)
     {
@@ -378,36 +371,4 @@ class ApiController extends Controller
 
         return response()->json(['success' => 'true','data'=>'Pass ID is available','message' => 'Pass ID is available'], 200);
     }
-    
-    // dashboard count
-    public function dashboard_counts()
-    {   
-        $today = Carbon::now()->toDateString();
-        $durationInMinutes = 3 * 60; // 3 hours * 60 minutes/hour
-        $durationInMinutesnew = 5 * 60; // 3 hours * 60 minutes/hour
-        
-        $data['todayEntryVisitorsCount'] = DB::table('visitors')->whereDate('entry_datetime', $today)->count();
-        
-        $data['todayExitVisitorsCount'] = DB::table('visitors')->whereDate('entry_datetime', $today)->whereDate('exit_datetime',$today)->count();
-        
-        $data['todayPendingExitCount'] = DB::table('visitors')->whereDate('entry_datetime', $today)->where('exit_datetime','=',null)->count();
-        
-        $data['morethanthreehourscount'] = DB::table('visitors')
-            ->select(DB::raw('COUNT(*) as count'))
-            ->whereRaw('TIMESTAMPDIFF(MINUTE, entry_datetime, exit_datetime) > ?', [$durationInMinutes])
-            ->whereRaw('DATE(entry_datetime) = CURDATE()')
-            ->first()
-            ->count;
-
-        $data['morethanfivehourscount'] = DB::table('visitors')
-        ->select(DB::raw('COUNT(*) as count'))
-        ->whereRaw('TIMESTAMPDIFF(MINUTE, entry_datetime, exit_datetime) > ?', [$durationInMinutesnew])
-        ->whereRaw('DATE(entry_datetime) = CURDATE()')
-        ->first()
-        ->count;
-        
-        return response()->json(['success' => true,'data' => $data,'message' => 'success'], 200);
-        
-    }
-    
 }
