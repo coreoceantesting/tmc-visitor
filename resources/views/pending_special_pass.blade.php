@@ -17,6 +17,8 @@ li {
 </style>
 @section('content')
 <div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-md-12 mb-4">
             @if(Session::has('success'))
                 <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
                     {{Session::get('success')}}
@@ -33,34 +35,32 @@ li {
                     </button>
                 </div>
             @endif
-    <div class="row justify-content-center">
-        <div class="col-xl-12 col-md-12 mb-4">
             <div class="card">
-                <div class="card-header text-white bg-primary align-items-center d-flex" style="justify-content: space-between;"><strong>Exited Visitor List</strong></div>
+                <div class="card-header text-white bg-primary align-items-center d-flex" style="justify-content: space-between;"><strong>Pending Special Pass List</strong></div>
                 <div class="card-body">
-                    <form action="{{ route('exitedlist.visitor') }}" method="GET">
+                    <form action="{{ route('pending.special_pass') }}" method="GET">
                         <div class="form-row">
                           <div class="form-group col-md-6">
                             <label for="Name"><strong>Name</strong></label>
                             <input type="text" style="border: solid 1px" class="form-control" placeholder="Name" name="name" id="name" value="{{ request('name') }}">
                           </div>
-                          <!--<div class="form-group col-md-6">-->
-                          <!--  <label for="mobnumber"><strong>Mobile Number</strong></label>-->
-                          <!--  <input type="number" style="border: solid 1px" class="form-control" name="mobnumber" id="mobnumber" placeholder="Mobile Number" value="{{ request('mobnumber') }}">-->
-                          <!--</div>-->
+                          <div class="form-group col-md-6">
+                            <label for="mobnumber"><strong>Mobile Number</strong></label>
+                            <input type="number" style="border: solid 1px" class="form-control" name="mobnumber" id="mobnumber" placeholder="Mobile Number" value="{{ request('mobnumber') }}">
+                          </div>
                           <!--<div class="form-group col-md-6">-->
                           <!--  <label for="Department"><strong>Department</strong></label>-->
                           <!--    <select class="form-control" name="dept" id="dept" style="border: solid 1px">-->
-                          <!--        <option value="">Select Visiting Department</option>-->
+                          <!--        <option value="">Select Department</option>-->
                           <!--        @foreach($department as $dept)-->
                           <!--              <option value="{{$dept->name}}" @if(request('dept') == $dept->name) selected @endif>{{$dept->name}}</option>-->
                           <!--          @endforeach-->
                           <!--    </select>-->
                           <!--</div>-->
-                          <div class="form-group col-md-6">
-                            <label for="passid"> <strong>Pass Id</strong> </label>
-                            <input type="text" style="border: solid 1px" class="form-control" name="passid" id="passid" placeholder="Enter Pass Id" value="{{ request('passid') }}">
-                          </div>
+                          <!--<div class="form-group col-md-6">-->
+                          <!--  <label for="oraganization"> <strong>Oraganization</strong> </label>-->
+                          <!--  <input type="text" style="border: solid 1px" class="form-control" name="oraganization" id="oraganization" placeholder="Enter oraganization" value="{{ request('oraganization') }}">-->
+                          <!--</div>-->
                         </div>
                         <button type="submit" class="btn btn-primary"><i class="fa fa-filter" aria-hidden="true"></i></button>
                     </form>
@@ -68,16 +68,18 @@ li {
             </div>
         </div>
     </div>
+    
     <table id="departmentTable" class="table table-bordered">
         <thead>
             <tr>
                 <th scope="col">Id</th>
                 <th scope="col">Name</th>
-                <th scope="col">Pass ID</th>
                 <th scope="col">Mobile Number</th>
-                <th scope="col">Entry Date And Time</th>
-                <th scope="col">Exit Date And Time</th>
                 <th scope="col">Oragnization</th>
+                <th scope="col">Valid From</th>
+                <th scope="col">Valid Till</th>
+                <th scope="col">Approval Status</th>
+                <th scope="col">Action</th>
             </tr>
         </thead>
         @if(count($visitors) > 0)
@@ -88,16 +90,19 @@ li {
                 <tbody>
                     <tr>
                         <th>{{$id}}</th>
-                        <th>{{$visitor->name}}</th>
-                        <th>{{$visitor->pass_id}}</th>
-                        <th>{{$visitor->mobile}}</th>
-                        <th>{{ \Carbon\Carbon::parse($visitor->entry_datetime)->format('d-m-Y h:i:s A')}}</th>
-                        <th> {{ \Carbon\Carbon::parse($visitor->exit_datetime)->format('d-m-Y h:i:s A')}}</th>
-                        <th>{{$visitor->organization}}</th>
+                        <th>{{$visitor->first_name}} {{$visitor->last_name}}</th>
+                        <th>{{$visitor->mob_no}}</th>
+                        <th>{{$visitor->organization_name}}</th>
+                        <th>{{$visitor->valid_from}}</th>
+                        <th>{{$visitor->valid_till}}</th>
+                        <th>{{$visitor->approval_status}}</th>
+                        <th>
+                            <a class="btn btn-success form-control"  href="{{ route('view.special_pass', ['id' => $visitor->special_pass_visitors_id]) }}">View</a>
+                        </th>
                     </tr>
                 </tbody>
                 @php
-                 $id++; // Initialize ID counter
+                $id++; // Initialize ID counter
                 @endphp
             @endforeach
         @else

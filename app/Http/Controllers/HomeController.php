@@ -32,24 +32,55 @@ class HomeController extends Controller
     public function index()
     {
         $today = Carbon::now()->toDateString();
-
-        $todayEntryVisitorsCount = DB::table('visitors')->whereDate('entry_datetime', $today)->count();
-        $todayExitVisitorsCount = DB::table('visitors')->whereDate('entry_datetime', $today)->where('exit_datetime','!=',null)->count();
-        $todayPendingExitCount = DB::table('visitors')->whereDate('entry_datetime', $today)->where('exit_datetime','=',null)->count();
         $durationInMinutes = 3 * 60; // 3 hours * 60 minutes/hour
-        $durationInMinutesnew = 3 * 60; // 3 hours * 60 minutes/hour
+        $durationInMinutesnew = 5 * 60; // 3 hours * 60 minutes/hour
 
-        $morethanthreehourscount = DB::table('visitors')
+        if (auth()->user()->role === 'hod')
+        {
+            $todayEntryVisitorsCount = DB::table('visitors')->where('visiting_dept',auth()->user()->department)->whereDate('entry_datetime', $today)->count();
+            $todayExitVisitorsCount = DB::table('visitors')->where('visiting_dept',auth()->user()->department)->whereDate('entry_datetime', $today)->whereDate('exit_datetime',$today)->count();
+            $todayPendingExitCount = DB::table('visitors')->where('visiting_dept',auth()->user()->department)->whereDate('entry_datetime', $today)->where('exit_datetime','=',null)->count();
+            
+            $morethanthreehourscount = DB::table('visitors')
             ->select(DB::raw('COUNT(*) as count'))
+            ->where('visiting_dept',auth()->user()->department)
             ->whereRaw('TIMESTAMPDIFF(MINUTE, entry_datetime, exit_datetime) > ?', [$durationInMinutes])
+             ->whereRaw('DATE(entry_datetime) = CURDATE()')
             ->first()
             ->count;
-
+            
+             $morethanfivehourscount = DB::table('visitors')
+            ->select(DB::raw('COUNT(*) as count'))
+            ->where('visiting_dept',auth()->user()->department)
+            ->whereRaw('TIMESTAMPDIFF(MINUTE, entry_datetime, exit_datetime) > ?', [$durationInMinutesnew])
+            ->whereRaw('DATE(entry_datetime) = CURDATE()')
+            ->first()
+            ->count;
+            
+        }else{
+            $todayEntryVisitorsCount = DB::table('visitors')->whereDate('entry_datetime', $today)->count();
+            $todayExitVisitorsCount = DB::table('visitors')->whereDate('entry_datetime', $today)->whereDate('exit_datetime',$today)->count();
+            $todayPendingExitCount = DB::table('visitors')->whereDate('entry_datetime', $today)->where('exit_datetime','=',null)->count();
+            
+            $morethanthreehourscount = DB::table('visitors')
+            ->select(DB::raw('COUNT(*) as count'))
+            ->whereRaw('TIMESTAMPDIFF(MINUTE, entry_datetime, exit_datetime) > ?', [$durationInMinutes])
+             ->whereRaw('DATE(entry_datetime) = CURDATE()')
+            ->first()
+            ->count;
+            
             $morethanfivehourscount = DB::table('visitors')
             ->select(DB::raw('COUNT(*) as count'))
             ->whereRaw('TIMESTAMPDIFF(MINUTE, entry_datetime, exit_datetime) > ?', [$durationInMinutesnew])
+            ->whereRaw('DATE(entry_datetime) = CURDATE()')
             ->first()
             ->count;
+        }
+        
+
+        
+
+        
 
         return view('home',compact('todayEntryVisitorsCount','todayExitVisitorsCount','todayPendingExitCount','morethanthreehourscount','morethanfivehourscount'));
     }
@@ -107,19 +138,24 @@ class HomeController extends Controller
             $query->where('name', 'like', '%' . $name . '%');
         }
 
-        if ($mobno) {
-            $query->where('mobile', $mobno);
-        }
+        // if ($mobno) {
+        //     $query->where('mobile', $mobno);
+        // }
 
-        if ($dept) {
-            $query->where('visiting_dept', $dept);
-        }
+        // if ($dept) {
+        //     $query->where('visiting_dept', $dept);
+        // }
 
         if ($passid) {
             $query->where('pass_id', $passid);
         }
-
-        $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->get();
+        
+        $today = Carbon::now()->format('Y-m-d');
+        if (auth()->user()->role === 'hod'){
+            $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->where('visiting_dept',auth()->user()->department)->orderBy('id','desc')->get();
+        }else{
+            $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->orderBy('id','desc')->get();
+        }
         $department = Department::where('is_delete','0')->get();
         $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
 
@@ -129,9 +165,9 @@ class HomeController extends Controller
     public function entry_list_visitor(Request $request)
     {
         $name = $request->input('name');
-        $mobno = $request->input('mobnumber');
-        $dept = $request->input('dept');
-        $oragnization = $request->input('oraganization');
+        $passid = $request->input('passid');
+        // $dept = $request->input('dept');
+        // $oragnization = $request->input('oraganization');
 
         $query = visitors::query();
 
@@ -139,19 +175,25 @@ class HomeController extends Controller
             $query->where('name', 'like', '%' . $name . '%');
         }
 
-        if ($mobno) {
-            $query->where('mobile', $mobno);
+        if ($passid) {
+            $query->where('pass_id', $passid);
         }
 
-        if ($dept) {
-            $query->where('visiting_dept', $dept);
-        }
+        // if ($dept) {
+        //     $query->where('visiting_dept', $dept);
+        // }
 
-        if ($oragnization) {
-            $query->where('organization', 'like', '%' . $oragnization . '%');
-        }
+        // if ($oragnization) {
+        //     $query->where('organization', 'like', '%' . $oragnization . '%');
+        // }
 
-        $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->get();
+        $today = Carbon::now()->format('Y-m-d');
+        if (auth()->user()->role === 'hod')
+        {
+            $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->where('visiting_dept',auth()->user()->department)->orderBy('id','desc')->get();
+        }else{
+            $visitors = $query->whereDate('entry_datetime', $today)->where('exit_datetime',null)->orderBy('id','desc')->get();
+        }
         $department = Department::where('is_delete','0')->get();
         $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
         // $visitors = Visitors::all();
@@ -167,7 +209,7 @@ class HomeController extends Controller
         // Update the exit time for the user
         $user->exit_datetime = now(); // Set the exit time to the current datetime
         $user->save();
-        return redirect()->route('exitlist.visitor')->with('success', 'Exit time updated successfully');
+        return redirect()->route('exitedlist.visitor')->with('success', 'Exit time updated successfully');
     }
 
     public function exited_list_visitor(Request $request)
@@ -185,19 +227,23 @@ class HomeController extends Controller
             $query->where('name', 'like', '%' . $name . '%');
         }
 
-        if ($mobno) {
-            $query->where('mobile', $mobno);
-        }
+        // if ($mobno) {
+        //     $query->where('mobile', $mobno);
+        // }
 
-        if ($dept) {
-            $query->where('visiting_dept', $dept);
-        }
+        // if ($dept) {
+        //     $query->where('visiting_dept', $dept);
+        // }
 
         if ($passid) {
             $query->where('pass_id', $passid);
         }
 
-        $visitors = $query->where('exit_datetime','!=',null)->orderBy('id','desc')->get();
+        if (auth()->user()->role === 'hod'){
+            $visitors = $query->where('exit_datetime','!=',null)->where('visiting_dept',auth()->user()->department)->orderBy('id','desc')->get();
+        }else{
+            $visitors = $query->where('exit_datetime','!=',null)->orderBy('id','desc')->get();
+        }
         $department = Department::where('is_delete','0')->get();
         $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
 
@@ -253,8 +299,13 @@ class HomeController extends Controller
         if ($oragnization) {
             $query->where('organization_name', 'like', '%' . $oragnization . '%');
         }
-
-        $visitors = $query->orderBy('special_pass_visitors_id','desc')->get();
+        
+        
+        if (auth()->user()->role === 'hod'){
+            $visitors = $query->where('department_name',auth()->user()->department)->orderBy('special_pass_visitors_id','desc')->get();
+        }else{
+            $visitors = $query->orderBy('special_pass_visitors_id','desc')->get();
+        }
         $department = Department::where('is_delete','0')->get();
         $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
         // $visitors = Visitors::all();
@@ -350,23 +401,78 @@ class HomeController extends Controller
         if ($oragnization) {
             $query->where('organization_name', 'like', '%' . $oragnization . '%');
         }
-
-        $visitors = $query->where('approval_status','pending')->orderBy('special_pass_visitors_id','desc')->get();
+        if (auth()->user()->role === 'hod'){
+            $visitors = $query->where('approval_status','pending')->where('department_name',auth()->user()->department)->orderBy('special_pass_visitors_id','desc')->get();
+        }else{
+            $visitors = $query->where('approval_status','pending')->orderBy('special_pass_visitors_id','desc')->get();
+        }
         $department = Department::where('is_delete','0')->get();
         $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
         
         return view('pending_special_pass',compact('visitors','department','VisitingPurpose'));
     }
     
-    public function special_pass_approval($id)
+    public function special_pass_approval(Request $request,$id)
     {
+        $remark = $request->input('approveremark');
         DB::table('special_pass_visitors')
         ->where('special_pass_visitors_id', $id) // Specify the condition for the update
         ->update([
             'approval_status' => 'approved',
+            'approval_by' => auth()->user()->first_name,
+            'approval_date' => date('d-m-Y'),
+            'remark' => $remark
         ]);
 
         return redirect()->route('pending.special_pass')->with('success', 'Special pass approved successfully');
+    }
+
+    public function special_pass_reject(Request $request,$id)
+    {
+        $remark = $request->input('rejectremark');
+        DB::table('special_pass_visitors')
+        ->where('special_pass_visitors_id', $id) // Specify the condition for the update
+        ->update([
+            'approval_status' => 'reject',
+            'approval_by' => auth()->user()->first_name,
+            'approval_date' => date('d-m-Y'),
+            'remark' => $remark
+        ]);
+
+        return redirect()->route('pending.special_pass')->with('success', 'Special pass rejected successfully');
+    }
+
+    // view speical pass
+    public function special_pass_view($id)
+    {
+        $data = DB::table('special_pass_visitors')->where('special_pass_visitors_id', $id)->first();
+        $department = Department::where('is_delete','0')->get();
+        $PassValidity = PassValidity::where('is_delete','0')->get();
+        $Passfor = Passfor::where('is_delete','0')->get();
+        return view('view_specialpass',compact('data','department','PassValidity','Passfor'));
+    }
+    
+    // not submitted pass (not exited)
+    
+    public function notexited_list_visitor(Request $request)
+    {
+        $name = $request->input('name');
+        $passid = $request->input('passid');
+
+        $query = visitors::query();
+
+        if ($name) {
+            $query->where('name', 'like', '%' . $name . '%');
+        }
+
+        if ($passid) {
+            $query->where('pass_id', $passid);
+        }
+
+        $visitors = $query->where('exit_datetime',null)->orderBy('id','desc')->get();
+        $department = Department::where('is_delete','0')->get();
+        $VisitingPurpose = VisitingPurpose::where('is_delete','0')->get();
+        return view('notsubmitted_visitor_list',compact('visitors','department','VisitingPurpose'));
     }
 
 }

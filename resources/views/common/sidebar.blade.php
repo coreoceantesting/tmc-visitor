@@ -46,35 +46,54 @@
     <!-- Divider -->
     <hr class="sidebar-divider">
 
+    @if (auth()->user()->role === 'staff')
+        <li class="nav-item active">
+            <a class="nav-link" href="{{route('register.visitor')}}">
+                <i class="fas fa-angle-double-right"></i>
+                <span>Visitor Entry</span></a>
+        </li>
+    @endif
+    
     <li class="nav-item active">
         <a class="nav-link" href="{{route('entrylist.visitor')}}">
             <i class="fas fa-angle-double-right"></i>
-            <span>Visitor Entry</span></a>
+            <span>Visitor Entry List</span></a>
     </li>
-
-    <li class="nav-item active">
-        <a class="nav-link" href="{{route('specialpass')}}">
-            <i class="fas fa-ticket-alt"></i>
-            <span>Visitor Special Pass</span></a>
-    </li>
-    
-    <li class="nav-item active">
-        <a class="nav-link" href="{{route('pending.special_pass')}}">
-            <i class="fas fa-hourglass-half"></i>
-            <span>Pending Special Pass</span></a>
-    </li>
-
-    <li class="nav-item active">
+    @if (auth()->user()->role === 'staff')
+     <li class="nav-item active">
         <a class="nav-link" href="{{route('exitlist.visitor')}}">
             <i class="fas fa-angle-double-left"></i>
             <span>Visitor Exit</span></a>
     </li>
+    @endif
 
     <li class="nav-item active">
         <a class="nav-link" href="{{route('exitedlist.visitor')}}">
             <i class="fas fa-angle-double-left"></i>
             <span>Exited Visitor List</span></a>
     </li>
+    
+    <li class="nav-item active">
+        <a class="nav-link" href="{{route('notexited.visitor')}}">
+            <i class="fas fa-hourglass-half"></i>
+            <span>Not Submitted Pass</span></a>
+    </li>
+
+    @if (auth()->user()->role == 'admin')
+        <li class="nav-item active">
+            <a class="nav-link" href="{{route('specialpass')}}">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Visitor Special Pass</span></a>
+        </li>
+    @endif
+        
+        <li class="nav-item active">
+            <a class="nav-link" href="{{route('pending.special_pass')}}">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Pending Special Pass</span></a>
+        </li>
+
+   
 
     <li class="nav-item active">
         <a class="nav-link" href="{{route('term.condition')}}">

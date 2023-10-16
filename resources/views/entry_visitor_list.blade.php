@@ -1,4 +1,5 @@
 @extends('layouts.master')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
 <style>
     .card-body {
     flex: 1 1 auto;
@@ -19,7 +20,7 @@ li {
     <div class="row justify-content-center">
         <div class="col-xl-12 col-md-12 mb-4">
             <div class="card">
-                <div class="card-header text-white bg-primary align-items-center d-flex" style="justify-content: space-between;"><strong>Visitor Entry List</strong> <a href="{{route('register.visitor')}}" class="btn btn-success btn-sm">Add Visitor</a></div>
+                <div class="card-header text-white bg-primary align-items-center d-flex" style="justify-content: space-between;"><strong>Visitor Entry List</strong></div>
                 <div class="card-body">
                     <form action="{{ route('entrylist.visitor') }}" method="GET">
                         <div class="form-row">
@@ -28,22 +29,22 @@ li {
                             <input type="text" style="border: solid 1px" class="form-control" placeholder="Name" name="name" id="name" value="{{ request('name') }}">
                           </div>
                           <div class="form-group col-md-6">
-                            <label for="mobnumber"><strong>Mobile Number</strong></label>
-                            <input type="number" style="border: solid 1px" class="form-control" name="mobnumber" id="mobnumber" placeholder="Mobile Number" value="{{ request('mobnumber') }}">
+                            <label for="mobnumber"><strong>Pass ID</strong></label>
+                            <input type="number" style="border: solid 1px" class="form-control" name="passid" id="passid" placeholder="Enter Passid" value="{{ request('passid') }}">
                           </div>
-                          <div class="form-group col-md-6">
-                            <label for="Department"><strong>Department</strong></label>
-                              <select class="form-control" name="dept" id="dept" style="border: solid 1px">
-                                  <option value="">Select Visiting Department</option>
-                                  @foreach($department as $dept)
-                                        <option value="{{$dept->name}}" @if(request('dept') == $dept->name) selected @endif>{{$dept->name}}</option>
-                                    @endforeach
-                              </select>
-                          </div>
-                          <div class="form-group col-md-6">
-                            <label for="oraganization"> <strong>Oraganization</strong> </label>
-                            <input type="text" style="border: solid 1px" class="form-control" name="oraganization" id="oraganization" placeholder="Enter oraganization" value="{{ request('oraganization') }}">
-                          </div>
+                          <!--<div class="form-group col-md-6">-->
+                          <!--  <label for="Department"><strong>Department</strong></label>-->
+                          <!--    <select class="form-control" name="dept" id="dept" style="border: solid 1px">-->
+                          <!--        <option value="">Select Visiting Department</option>-->
+                          <!--        @foreach($department as $dept)-->
+                          <!--              <option value="{{$dept->name}}" @if(request('dept') == $dept->name) selected @endif>{{$dept->name}}</option>-->
+                          <!--          @endforeach-->
+                          <!--    </select>-->
+                          <!--</div>-->
+                          <!--<div class="form-group col-md-6">-->
+                          <!--  <label for="oraganization"> <strong>Oraganization</strong> </label>-->
+                          <!--  <input type="text" style="border: solid 1px" class="form-control" name="oraganization" id="oraganization" placeholder="Enter oraganization" value="{{ request('oraganization') }}">-->
+                          <!--</div>-->
                         </div>
                         <button type="submit" class="btn btn-primary"><i class="fa fa-filter" aria-hidden="true"></i></button>
                     </form>
@@ -51,49 +52,53 @@ li {
             </div>
         </div>
     </div>
-    <div class="row">
+    <table id="departmentTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Name</th>
+                <th scope="col">Pass ID</th>
+                <th scope="col">Mobile Number</th>
+                <th scope="col">Date And Time</th>
+                <th scope="col">Oragnization</th>
+            </tr>
+        </thead>
         @if(count($visitors) > 0)
+            @php
+                $id = 1; // Initialize ID counter
+            @endphp
             @foreach($visitors as $visitor)
-                <div class="col-sm-6" style="padding: 10px;">
-                    <div class="card border-primary mb-3">
-                        <div class="card-header bg-primary border-primary"><strong class="text-white" style="font-size: x-large;">{{$visitor->name}}</strong></div>
-                        <div class="card-body">
-                            <ul>
-                                <li><strong>Pass ID:</strong> {{$visitor->pass_id}}</li>
-                                <li><strong>Mobile Number:</strong> {{$visitor->mobile}}</li>
-                                <li><strong>Date And Time:</strong> {{$visitor->entry_datetime}}</li>
-                                <li><strong>Oragnization:</strong> {{$visitor->organization}}</li>
-                            </ul>
-                        </div>
-                        {{-- <div class="card-footer bg-transparent border-primary text-center"><a href="#" class="btn btn-primary">Exit</a></div> --}}
-                    </div>
-                </div>
+                <tbody>
+                    <tr>
+                        <th>{{$id}}</th>
+                        <th>{{$visitor->name}}</th>
+                        <th>{{$visitor->pass_id}}</th>
+                        <th>{{$visitor->mobile}}</th>
+                        <th>{{$visitor->entry_datetime}}</th>
+                        <th>{{$visitor->organization}}</th>
+                    </tr>
+                </tbody>
+            @php
+            $id++; // Initialize ID counter
+            @endphp
             @endforeach
         @else
             <p>No Record Found</p>
         @endif
-    </div>
+    </table>
 </div>
 @endsection
 
-<!-- Include Twitter Bootstrap CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
-
-<!-- Include DataTables CSS with Bootstrap 4 styling -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
-
-<!-- Include DataTables Buttons CSS with Bootstrap 4 styling -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap4.min.css">
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js" defer></script>
 
 <script>
-   $(document).ready(function() {
-    var table = $('#example').DataTable( {
-        lengthChange: false,
-        buttons: [ 'copy', 'excel', 'pdf', 'colvis' ]
-    } );
- 
-    table.buttons().container()
-        .appendTo( '#example_wrapper .col-md-6:eq(0)' );
-} );
+    $(document).ready(function() {
+        $('#departmentTable').DataTable({
+            "searching": false,
+            "paging": true,
+            "lengthMenu": [10, 25, 50, 75, 100],
+        });
+    });
+</script>
 </script>

@@ -29,6 +29,7 @@ Route::get('/exit-list-visitor', [App\Http\Controllers\HomeController::class, 'e
 Route::get('/entry-list-visitor', [App\Http\Controllers\HomeController::class, 'entry_list_visitor'])->name('entrylist.visitor');
 Route::post('/visitor-exit/{id}', [App\Http\Controllers\HomeController::class, 'update_visitor_exit_time'])->name('update.exit');
 Route::get('/exited-list-visitor', [App\Http\Controllers\HomeController::class, 'exited_list_visitor'])->name('exitedlist.visitor');
+Route::get('/notexited-list-visitor', [App\Http\Controllers\HomeController::class, 'notexited_list_visitor'])->name('notexited.visitor');
 
 // Masters Route
 
@@ -79,6 +80,9 @@ Route::get('/add-special-pass-visitor', [App\Http\Controllers\HomeController::cl
 Route::post('/store-special-visitor-pass', [App\Http\Controllers\HomeController::class, 'store_special_pass'])->name('store.special_pass');
 Route::get('/pending-special-pass', [App\Http\Controllers\HomeController::class, 'pending_special_pass'])->name('pending.special_pass');
 Route::post('/special-pass-approved/{id}', [App\Http\Controllers\HomeController::class, 'special_pass_approval'])->name('approved.special_pass');
+
+Route::get('/special-pass-view/{id}', [App\Http\Controllers\HomeController::class, 'special_pass_view'])->name('view.special_pass');
+Route::post('/special-pass-reject/{id}', [App\Http\Controllers\HomeController::class, 'special_pass_reject'])->name('reject.special_pass');
 
 // Change password routes
 // Display the password change form
